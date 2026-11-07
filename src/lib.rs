@@ -49,7 +49,8 @@ struct Rule {
     allow: Vec<Regex>,
 }
 
-/// A set of rules. A rule earlier in the set wins over a later one that matches the same text
+/// A set of rules. When two matches overlap, the earlier rule names the secret and the
+/// replacement covers both
 pub struct Redactor {
     rules: Vec<Rule>,
 }
@@ -145,7 +146,10 @@ impl Redactor {
                 }
 
                 let (start, end) = (secret.start(), secret.end());
-                if found.iter().any(|f| start < f.end && end > f.start) {
+                // The earlier rule names the secret, and the replaced text covers both matches
+                if let Some(f) = found.iter_mut().find(|f| start < f.end && end > f.start) {
+                    f.start = f.start.min(start);
+                    f.end = f.end.max(end);
                     continue;
                 }
 
@@ -159,6 +163,16 @@ impl Redactor {
         }
 
         found.sort_by_key(|f| f.start);
+        let mut merged: Vec<Finding> = Vec::with_capacity(found.len());
+        for finding in found {
+            if let Some(last) = merged.last_mut().filter(|last| finding.start < last.end) {
+                last.end = last.end.max(finding.end);
+                continue;
+            }
+
+            merged.push(finding);
+        }
+        let mut found = merged;
         for finding in &mut found {
             finding.line = text[..finding.start].matches('\n').count() + 1;
         }
@@ -403,6 +417,14 @@ mod tests {
         let token = github_token();
         let out = strict().redact(&format!("export GITHUB_TOKEN={token}"));
         assert_eq!(out.rules(), ["github-pat"]);
+    }
+
+    #[test]
+    fn overlapping_matches_are_redacted_as_one_span() {
+        let url = format!("postgres://user:{}@db.internal:5432/app", "Dvr9qZx2Lk7");
+        let out = strict().redact(&format!("DATABASE_URL={url}"));
+        assert_eq!(out.rules(), ["url-credentials"]);
+        assert_eq!(out.text, "DATABASE_URL=[REDACTED:url-credentials]");
     }
 
     #[test]
