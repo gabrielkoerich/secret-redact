@@ -1,0 +1,12 @@
+runner = "host"
+on = ["push", "commit"]
+
+[host]
+versions = ["cargo --version", "rustc --version", "gitleaks version"]
+
+[host.checks]
+fmt = "cargo fmt --check"
+clippy = "cargo clippy --all-targets -- -D warnings"
+dylint = "DYLINT_RUSTFLAGS='-D warnings' cargo dylint --all -- --all-targets"
+test = "cargo test"
+gitleaks = "d=$(mktemp -d \"$HOME/scan.XXXXXX\") && git archive HEAD | tar -x -C \"$d\" && gitleaks dir --redact --no-banner \"$d\""

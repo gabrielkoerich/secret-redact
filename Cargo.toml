@@ -1,0 +1,46 @@
+[package]
+name = "secret-redact"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.89"
+description = "Find secrets in text and replace them with [REDACTED:rule]: API keys, tokens, private keys, credentials in URLs and config lines"
+license = "MIT"
+repository = "https://github.com/gabrielkoerich/secret-redact"
+readme = "README.md"
+keywords = ["secrets", "redact", "gitleaks", "security", "leak"]
+categories = ["command-line-utilities", "text-processing"]
+
+[dependencies]
+regex = "1"
+
+[lints.rust]
+unsafe_op_in_unsafe_fn = "warn"
+missing_debug_implementations = "warn"
+unreachable_pub = "warn"
+missing_docs = "warn"
+rust_2018_idioms = { level = "warn", priority = -1 }
+
+[lints.clippy]
+all = { level = "warn", priority = -1 }
+pedantic = { level = "warn", priority = -1 }
+unwrap_used = "warn"
+panic_in_result_fn = "warn"
+missing_assert_message = "warn"
+allow_attributes = "warn"
+allow_attributes_without_reason = "warn"
+undocumented_unsafe_blocks = "warn"
+multiple_unsafe_ops_per_block = "warn"
+clone_on_ref_ptr = "warn"
+redundant_clone = "warn"
+rc_buffer = "warn"
+string_add = "warn"
+wildcard_imports = "warn"
+absolute_paths = "warn"
+arbitrary_source_item_ordering = "warn"
+dbg_macro = "warn"
+todo = "warn"
+print_stdout = "warn"
+print_stderr = "warn"
+module_name_repetitions = "allow"
+must_use_candidate = "allow"
+similar_names = "allow"
